@@ -40,15 +40,19 @@ function CurrencyConverter(){
     }, [])
 
     const valuteNameOptionItem = currency.map( (item, key) => 
-            <option key={key} value={item.Value}>{item.CharCode}</option>
+            <option key={key} value={item.Value} title={item.Name}>{item.CharCode}</option>
         
     );
+
+    function handleChange(event) {
+        console.log(event.target.value);
+      }
     
     return (
         <div className="container">
             <h3>Конвертер валют</h3>
             <div className="currency">
-                <select>
+                <select onChange={handleChange}>
                     {valuteNameOptionItem}
                 </select>
                 <p>в</p>
