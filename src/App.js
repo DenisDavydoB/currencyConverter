@@ -3,7 +3,7 @@ import CurrencyConverter from './CurrencyConverter/CurrencyConverter'
 
 function App() {
   return (
-    <div>
+    <div className="wrapper">
       <CurrencyConverter/>
     </div>
   );

@@ -1,3 +1,4 @@
+import './CurrencyConverter.css';
 import React, { useState, useEffect } from 'react';
 
 
@@ -44,24 +45,26 @@ function CurrencyConverter(){
     );
     
     return (
-        <div>
-            <div>
-                <p>Вы переводите из</p>
+        <div className="container">
+            <h3>Конвертер валют</h3>
+            <div className="currency">
                 <select>
                     {valuteNameOptionItem}
                 </select>
-
-                <p>В</p>
+                <p>в</p>
                 <select>
                     {valuteNameOptionItem}
                 </select>
             </div>
 
-
-            <div>
-                <form> <input type="text" name="name" /></form>
-                <form> <input type="text" name="name" /></form>
+            <div className="currency">
+                <input type="number" name="name" />
+                <p>=</p>
+                <input type="number" name="name" />
             </div>
+
+            <h5>Поменять местами</h5>
+
         </div>           
     )
 };
