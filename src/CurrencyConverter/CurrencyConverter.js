@@ -1,129 +1,135 @@
-import './CurrencyConverter.css';
-import React, { useState, useEffect } from 'react';
+import "./CurrencyConverter.css";
+import React, { useState, useEffect } from "react";
 
+function CurrencyConverter() {
+  const currencySourceUrl = "https://www.cbr-xml-daily.ru/daily_json.js";
 
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [currency, setCurrency] = useState([]);
+  const [currentRateAndState, setCurrentRateAndState] = useState({
+    fromRateValue: 1,
+    fromValue: 0,
+    toRateValue: 1,
+    toValue: 0,
+  });
 
-function CurrencyConverter(){
+  useEffect(() => {
+    fetch(currencySourceUrl)
+      .then((response) => {
+        return response.json();
+      })
+      .then((result) => {
+        let currencyValute = [
+          {
+            ID: "",
+            NumCode: "",
+            CharCode: "RUB",
+            Nominal: 1,
+            Name: "Российский рубль",
+            Value: 1,
+            Previous: 1,
+          },
+        ];
 
-    const currencySourceUrl = 'https://www.cbr-xml-daily.ru/daily_json.js'
+        for (const [key, value] of Object.entries(result.Valute)) {
+          currencyValute.push(value);
+        }
+        setIsLoaded(true);
+        setCurrency(currencyValute);
+      });
+  }, []);
 
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [currency, setCurrency] = useState([]);
-    const [currentRateAndState, setCurrentRateAndState] = useState({  
-                                                                        "fromRateValue": 1, 
-                                                                        "fromValue": 0, 
-                                                                        "toRateValue": 1, 
-                                                                        "toValue": 0
-                                                                    }
-                                                                    );
-    console.log(currentRateAndState);
-
-    useEffect(() => {
-
-        fetch(currencySourceUrl).then((response) => {
-            return response.json()
-            }).then(result  => {
-    
-            let currencyValute = [  
-                     {
-                        "ID": "",
-                        "NumCode": "",
-                        "CharCode": "RUB",
-                        "Nominal": 1,
-                        "Name": "Российский рубль",
-                        "Value": 1,
-                        "Previous": 1
-                    }]   
-
-            for (const [key, value] of Object.entries(result.Valute)) {
-                currencyValute.push(value);
-            }
-                setIsLoaded(true);
-                setCurrency(currencyValute);
-            })
-
-    }, [])
-
-    const valuteNameOptionItem = currency.map( (item, key) => 
-            <option key={key} value={item.Value} title={item.Name}>{item.CharCode}</option>
-        
+  function toCurrancyValueCalc(valueAndRates) {
+    valueAndRates.toValue = Number(
+      (
+        (valueAndRates.fromRateValue / valueAndRates.toRateValue) *
+        valueAndRates.fromValue
+      ).toFixed(2)
     );
 
-    function toCurrancyValueCalc(valueAndRates) {
+    setCurrentRateAndState({ ...valueAndRates });
+  }
 
-        valueAndRates.toValue = Number((valueAndRates.fromRateValue / valueAndRates.toRateValue * valueAndRates.fromValue).toFixed(2))
+  function handleInputOrSelectChange(event) {
+    let tmp = currentRateAndState;
 
-        setCurrentRateAndState({...valueAndRates})
-        
-    }
+    tmp[event.target.name] = Number(event.target.value);
 
-    function handleInputOrSelectChange(event) {
-        
-        let tmp = currentRateAndState
+    Number(event.target.value) < 0
+      ? (tmp[event.target.name] = 0)
+      : (tmp[event.target.name] = Number(event.target.value));
 
-        tmp[event.target.name] = Number(event.target.value)
+    toCurrancyValueCalc(tmp);
+  }
 
-        Number(event.target.value) < 0 ? tmp[event.target.name] = 0 : tmp[event.target.name] = Number(event.target.value)
+  function handleFromToSwap(event) {
+    event.preventDefault();
 
-        toCurrancyValueCalc(tmp)
+    let tmp = { ...currentRateAndState };
 
-      }
+    tmp.fromValue = currentRateAndState.toValue;
+    tmp.fromRateValue = currentRateAndState.toRateValue;
+    tmp.toValue = currentRateAndState.fromValue;
+    tmp.toRateValue = currentRateAndState.fromRateValue;
 
-    function handleFromToSwap(event) {
+    toCurrancyValueCalc(tmp);
+  }
 
-        event.preventDefault();
+  const valuteNameOptionItem = currency.map((item, key) => (
+    <option key={key} value={item.Value} title={item.Name}>
+      {item.CharCode}
+    </option>
+  ));
 
-        let tmp = {...currentRateAndState}
+  return (
+    <div className="container">
+      <h3>Конвертер валют</h3>
+      <form>
+        <div className="currency">
+          <select
+            name="fromRateValue"
+            value={currentRateAndState.fromRateValue}
+            onChange={handleInputOrSelectChange}
+          >
+            {valuteNameOptionItem}
+          </select>
+          <p>в</p>
+          <select
+            name="toRateValue"
+            value={currentRateAndState.toRateValue}
+            onChange={handleInputOrSelectChange}
+          >
+            {valuteNameOptionItem}
+          </select>
+        </div>
 
-        tmp.fromValue       = currentRateAndState.toValue 
-        tmp.fromRateValue   = currentRateAndState.toRateValue 
-        tmp.toValue         = currentRateAndState.fromValue
-        tmp.toRateValue     = currentRateAndState.fromRateValue
-        
-        toCurrancyValueCalc(tmp)
-    }  
-    
-    return (
-        <div className="container">
-            <h3>Конвертер валют</h3>
-            <form>
-                <div className="currency">
-                    <select name="fromRateValue" 
-                            value={currentRateAndState.fromRateValue}
-                            onChange={handleInputOrSelectChange}>
-                        {valuteNameOptionItem}
-                    </select>
-                    <p>в</p>
-                    <select name="toRateValue" 
-                            value={currentRateAndState.toRateValue}
-                            onChange={handleInputOrSelectChange}>
-                        {valuteNameOptionItem}
-                    </select>
-                </div>
+        <div className="currency">
+          <input
+            value={currentRateAndState.fromValue}
+            name="fromValue"
+            type="number"
+            placeholder="0"
+            onChange={handleInputOrSelectChange}
+          />
+          <p>=</p>
+          <input
+            value={currentRateAndState.toValue}
+            name="toValue"
+            type="number"
+            placeholder="0"
+            readOnly="readnly"
+            onChange={handleInputOrSelectChange}
+          />
+        </div>
 
-                <div className="currency">
-                    <input  value={currentRateAndState.fromValue} 
-                            name="fromValue" 
-                            type="number"
-                            placeholder="0" 
-                            onChange={handleInputOrSelectChange}/>
-                    <p>=</p>
-                    <input  value={currentRateAndState.toValue} 
-                            name="toValue" 
-                            type="number" 
-                            placeholder="0"
-                            readOnly="readnly"
-                            onChange={handleInputOrSelectChange}/>
-                </div>
+        <div className="currency">
+          <button onClick={handleFromToSwap}>
+            <h5>Поменять местами</h5>
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
 
-                <div className="currency">
-                    <button onClick={handleFromToSwap}>
-                        <h5>Поменять местами</h5>
-                    </button>
-                </div>                
-            </form>
-        </div>           
-    )
-};
-
-export default CurrencyConverter
+export default CurrencyConverter;
