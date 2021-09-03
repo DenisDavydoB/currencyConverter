@@ -72,6 +72,11 @@ h5{
   color: gray;
 }
 
+button{
+  background-color: Transparent;
+  border: none;
+  align-items: center;
+}
 
 select, input{
   width: 100%;

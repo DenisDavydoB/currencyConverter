@@ -9,16 +9,15 @@ function CurrencyConverter(){
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [currency, setCurrency] = useState([]);
-    const [rateObject, setRateObject] = useState({  
-                                                    "aRateValue": 0, 
-                                                    "aValue": 0, 
-                                                    "bRateValue": 0, 
-                                                    "bValue": 0
-                                                }
-                                                );
+    const [currentRateAndState, setCurrentRateAndState] = useState({  
+                                                                        "fromRateValue": 1, 
+                                                                        "fromValue": 0, 
+                                                                        "toRateValue": 1, 
+                                                                        "toValue": 0
+                                                                    }
+                                                                    );
+    console.log(currentRateAndState);
 
-    console.log(rateObject);
-    
     useEffect(() => {
 
         fetch(currencySourceUrl).then((response) => {
@@ -50,32 +49,78 @@ function CurrencyConverter(){
         
     );
 
-    function handleChange(event) {
+    function toCurrancyValueCalc(valueAndRates) {
+
+        valueAndRates.toValue = Number((valueAndRates.fromRateValue / valueAndRates.toRateValue * valueAndRates.fromValue).toFixed(2))
+
+        setCurrentRateAndState({...valueAndRates})
         
-        console.log(event.target.name);
+    }
+
+    function handleInputOrSelectChange(event) {
+        
+        let tmp = currentRateAndState
+
+        tmp[event.target.name] = Number(event.target.value)
+
+        Number(event.target.value) < 0 ? tmp[event.target.name] = 0 : tmp[event.target.name] = Number(event.target.value)
+
+        toCurrancyValueCalc(tmp)
+
       }
+
+    function handleFromToSwap(event) {
+
+        event.preventDefault();
+
+        let tmp = {...currentRateAndState}
+
+        tmp.fromValue       = currentRateAndState.toValue 
+        tmp.fromRateValue   = currentRateAndState.toRateValue 
+        tmp.toValue         = currentRateAndState.fromValue
+        tmp.toRateValue     = currentRateAndState.fromRateValue
+        
+        toCurrancyValueCalc(tmp)
+    }  
     
     return (
         <div className="container">
             <h3>Конвертер валют</h3>
             <form>
                 <div className="currency">
-                    <select name="currencyA" onChange={handleChange}>
+                    <select name="fromRateValue" 
+                            value={currentRateAndState.fromRateValue}
+                            onChange={handleInputOrSelectChange}>
                         {valuteNameOptionItem}
                     </select>
                     <p>в</p>
-                    <select name="currency2" onChange={handleChange}>
+                    <select name="toRateValue" 
+                            value={currentRateAndState.toRateValue}
+                            onChange={handleInputOrSelectChange}>
                         {valuteNameOptionItem}
                     </select>
                 </div>
 
                 <div className="currency">
-                    <input value={rateObject.aValue} name="currencyValueA" type="number" onChange={handleChange}/>
+                    <input  value={currentRateAndState.fromValue} 
+                            name="fromValue" 
+                            type="number"
+                            placeholder="0" 
+                            onChange={handleInputOrSelectChange}/>
                     <p>=</p>
-                    <input value={rateObject.bValue} name="currencyValueB" type="number" onChange={handleChange}/>
+                    <input  value={currentRateAndState.toValue} 
+                            name="toValue" 
+                            type="number" 
+                            placeholder="0"
+                            readOnly="readnly"
+                            onChange={handleInputOrSelectChange}/>
                 </div>
 
-                <h5>Поменять местами</h5>
+                <div className="currency">
+                    <button onClick={handleFromToSwap}>
+                        <h5>Поменять местами</h5>
+                    </button>
+                </div>                
             </form>
         </div>           
     )
